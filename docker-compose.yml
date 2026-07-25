@@ -3,24 +3,24 @@ version: '3.8'
 services:
   postgres:
     image: postgres:15-alpine
-    container_name: simbi_ke_db
+    container_name: simbi-postgres
     environment:
-      POSTGRES_DB: ${DB_NAME:-simbi_ke}
-      POSTGRES_USER: ${DB_USER:-postgres}
-      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
+      POSTGRES_DB: simbi_ke
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: simbi_password_123
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-postgres}"]
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 10s
       timeout: 5s
       retries: 5
 
   redis:
     image: redis:7-alpine
-    container_name: simbi_ke_redis
+    container_name: simbi-redis
     ports:
       - "6379:6379"
     volumes:
@@ -35,18 +35,21 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    container_name: simbi_ke_backend
-    ports:
-      - "5000:5000"
+    container_name: simbi-backend
     environment:
-      NODE_ENV: ${NODE_ENV:-development}
+      NODE_ENV: production
+      PORT: 5000
       DB_HOST: postgres
       DB_PORT: 5432
-      DB_NAME: ${DB_NAME:-simbi_ke}
-      DB_USER: ${DB_USER:-postgres}
-      DB_PASSWORD: ${DB_PASSWORD:-postgres}
+      DB_NAME: simbi_ke
+      DB_USER: postgres
+      DB_PASSWORD: simbi_password_123
       REDIS_HOST: redis
       REDIS_PORT: 6379
+      JWT_SECRET: your_super_secret_jwt_key_change_in_production
+      MPESA_ENVIRONMENT: sandbox
+    ports:
+      - "5000:5000"
     depends_on:
       postgres:
         condition: service_healthy
@@ -55,16 +58,18 @@ services:
     volumes:
       - ./backend:/app
       - /app/node_modules
+    command: sh -c "npm run migrate && npm start"
 
   frontend:
     build:
       context: ./frontend
       dockerfile: Dockerfile
-    container_name: simbi_ke_frontend
+    container_name: simbi-frontend
+    environment:
+      NEXT_PUBLIC_API_URL: http://localhost:5000/api
+      NEXT_PUBLIC_WS_URL: http://localhost:5000
     ports:
       - "3000:3000"
-    environment:
-      REACT_APP_API_URL: http://localhost:5000
     depends_on:
       - backend
     volumes:
@@ -77,4 +82,4 @@ volumes:
 
 networks:
   default:
-    name: simbi_ke_network
+    name: simbi-network
