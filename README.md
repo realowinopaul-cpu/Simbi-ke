@@ -1,153 +1,297 @@
-# SIMBI KE — Kenyan PvP Maize-Toss Wagering Platform
+# SIMBI KE
 
-## Project Overview
+🌾 **A modern maize toss gaming platform for Kenyans** 🎮
 
-SIMBI KE is a full-stack web application offering a Kenya-exclusive PvP (player-vs-player) wagering game where users bet on the outcome of four maize-like structures tossed simultaneously. The platform supports M-Pesa and Airtel Money, handles up to 500,000 concurrent users, and operates on a 50-50 win probability with a 5-second match cycle.
+> Where tradition meets technology: Experience the classic maize toss (Dondo) game in a digital revolution.
 
-## Key Features
+---
 
-- **Maize Toss Game**: Four binary objects (maize cobs) with 50-50 win probability
-- **Real-time Matchmaking**: WebSocket-powered queue system with auto-matching
-- **M-Pesa & Airtel Integration**: Seamless payment processing with 5% deposit VAT and 10% withdrawal fees
-- **Scalable Architecture**: Supports 500,000 concurrent users
-- **Secure Authentication**: JWT + OTP verification for Kenyan mobile numbers
-- **Live Dashboard**: Queue positions, game history, real-time balance updates
+## 🎯 Overview
 
-## Tech Stack
+SIMBI KE is a real-time, online gaming platform built on Kenya's cultural tradition of maize tossing. Users compete in 1v1 matches with instant results, secure payments via M-Pesa & Airtel Money, and a vibrant community of players.
 
-- **Frontend**: Next.js, React, TailwindCSS, Socket.io
-- **Backend**: Node.js, Express.js, Socket.io
-- **Database**: PostgreSQL (relational), Redis (queue/cache)
-- **Authentication**: JWT, bcrypt, OTP via SMS
-- **Deployment**: Docker, PM2
+### Key Features
 
-## Directory Structure
+✅ **User Authentication**
+- Phone number + OTP registration
+- Secure JWT-based sessions
+- Remember me functionality
 
-```
-simbi-ke/
-├── backend/
-│   ├── src/
-│   │   ├── config/
-│   │   ├── models/
-│   │   ├── routes/
-│   │   ├── controllers/
-│   │   ├── middleware/
-│   │   ├── services/
-│   │   ├── utils/
-│   │   └── app.js
-│   ├── database/
-│   │   └── schema.sql
-│   ├── .env.example
-│   ├── package.json
-│   ├── Dockerfile
-│   └── server.js
-├── frontend/
-│   ├── pages/
-│   ├── components/
-│   ├── styles/
-│   ├── utils/
-│   ├── .env.example
-│   ├── package.json
-│   ├── next.config.js
-│   └── Dockerfile
-├── admin/
-│   ├── pages/
-│   ├── components/
-│   └── package.json
-└── docker-compose.yml
-```
+✅ **Real-Time Gaming**
+- Live queue system (FCFS matching)
+- Instant maize toss results
+- 50-50 probability validation
+- WebSocket real-time updates
 
-## Quick Start
+✅ **Payment Integration**
+- M-Pesa STK Push
+- Airtel Money API
+- Instant deposits & withdrawals
+- Transaction history
+
+✅ **Player Profiles**
+- Stats tracking (wins, losses, balance)
+- Game history
+- Leaderboards
+
+✅ **Admin Dashboard**
+- System statistics
+- Fraud detection
+- User management
+- Transaction monitoring
+
+---
+
+## 🚀 Quick Start
 
 ### Prerequisites
-- Node.js 18+
-- PostgreSQL 14+
-- Redis 7+
-- Docker & Docker Compose (optional)
 
-### Installation
+- Node.js 18+
+- Docker & Docker Compose
+- PostgreSQL 15+
+- Redis 7+
+
+### Local Development
 
 ```bash
-# Clone and setup
+# Clone repository
 git clone https://github.com/realowinopaul-cpu/simbi-ke.git
 cd simbi-ke
 
-# Backend setup
+# Setup with Docker
+docker-compose up -d
+
+# Verify services
+docker-compose ps
+```
+
+Access:
+- 🎮 Frontend: http://localhost:3000
+- 🔌 Backend API: http://localhost:5000
+- 🗄️ PostgreSQL: localhost:5432
+- 💾 Redis: localhost:6379
+
+### Manual Setup
+
+```bash
+# Backend
 cd backend
 npm install
 cp .env.example .env
-# Configure .env with database credentials
 npm run migrate
-npm start
+npm run dev
 
-# Frontend setup (new terminal)
+# Frontend (new terminal)
 cd frontend
 npm install
 cp .env.example .env
 npm run dev
 ```
 
-### Docker Deployment
+---
 
-```bash
-docker-compose up -d
+## 📁 Project Structure
+
+```
+simbi-ke/
+├── backend/                 # Express.js API
+│   ├── routes/             # API endpoints
+│   ├── controllers/        # Business logic
+│   ├── models/             # Database schemas
+│   ├── middleware/         # Auth, validation, etc.
+│   ├── utils/              # Helpers & crypto
+│   └── server.js           # Entry point
+├── frontend/               # Next.js application
+│   ├── pages/             # React pages
+│   ├── components/        # Reusable components
+│   ├── utils/             # API client, helpers
+│   ├── styles/            # Tailwind CSS
+│   └── public/            # Static assets
+├── docker-compose.yml      # Docker orchestration
+├── API.md                  # API documentation
+├── DEPLOYMENT.md           # Deployment guide
+└── ROADMAP.md             # Feature roadmap
 ```
 
-## API Documentation
+---
 
-See `backend/API.md` for complete endpoint documentation.
+## 🎮 How It Works
 
-## Gaming Mechanics
+### Game Flow
 
-### Win/Lose Logic (50-50 Probability)
-- **WINNING** (8/16): 2W+2B (6 combos) + 4W (1 combo) + 4B (1 combo)
-- **LOSING** (8/16): 3W+1B (4 combos) + 1W+3B (4 combos)
+1. **User Registration** → OTP verification → Login
+2. **Deposit Funds** → M-Pesa/Airtel payment → Instant credit
+3. **Join Queue** → Real-time position tracking → Auto-matching
+4. **Play Match** → Roller tosses maize → Instant result
+5. **Withdraw** → 10% fee deducted → Funds transferred
 
-### Room Structure
-- **Stake Range**: KES 10 to KES 20,000
-- **Interval**: KES 40 increments
-- **Formula**: `stake = 10 + (room_index × 40)`
-- **Max Capacity**: 500 players per room
-- **Match Duration**: 5 seconds per round
+### Win Logic (50-50 Probability)
 
-## Financial Model
+Four maize cobs are tossed:
+- **WHITE side = Wins** (2W+2B, 4W = 50% chance)
+- **BLACK side = Loses** (4B = 50% chance)
+- **Instant payout** based on stake
 
-- **Deposit VAT**: 5% deducted (e.g., KES 100 → KES 95 credited)
-- **Withdrawal Fee**: 10% deducted (e.g., withdraw KES 1,000 → KES 900 received)
-- **System Collection**: Withdrawal fees to M-Pesa 254708140269
+---
 
-## Security Features
+## 💻 Technology Stack
 
-- Kenya-only geolocation enforcement
-- Phone number validation (254XXXXXXXXX format)
-- 18+ age verification
-- Cryptographically secure random outcomes
-- Rate limiting on all APIs
-- Anti-fraud device/IP tracking
+### Backend
+- **Runtime**: Node.js 18+ with Express.js
+- **Database**: PostgreSQL 15
+- **Cache**: Redis 7
+- **Real-time**: Socket.IO (WebSockets)
+- **Payment**: M-Pesa API, Airtel Money API
+- **Auth**: JWT, bcrypt
+- **Validation**: Joi, Express-validator
 
-## Branding Colors
+### Frontend
+- **Framework**: Next.js 13
+- **UI**: React 18 with Tailwind CSS
+- **State**: Zustand
+- **HTTP**: Axios
+- **Animation**: Framer Motion
+- **Notifications**: React Hot Toast
+- **Real-time**: Socket.IO client
 
-- **Primary Yellow**: #F4C430
-- **Kenyan Green**: #006600
-- **Charcoal Black**: #1A1A1A
-- **White**: #FFFFFF
-- **Alert Red**: #CC0000
+### DevOps
+- **Containerization**: Docker
+- **Orchestration**: Docker Compose
+- **Reverse Proxy**: Nginx
+- **SSL**: Let's Encrypt
+- **Monitoring**: (TBD)
 
-## Support
+---
 
-- **Help Desk**: +254 748 278 327 | +254 786 743 973
-- **Social**: @SimbiKE (Twitter, Facebook, TikTok, Instagram)
+## 📊 API Endpoints
 
-## License
+### Authentication
+- `POST /api/auth/register` - Register user
+- `POST /api/auth/verify-otp` - Verify OTP
+- `POST /api/auth/login` - Login
+- `POST /api/auth/logout` - Logout
 
-Proprietary — All rights reserved.
+### Gaming
+- `GET /api/game/rooms` - List available rooms
+- `POST /api/game/join-queue` - Join queue
+- `POST /api/game/toss` - Toss result
+- `GET /api/game/history` - Game history
 
-## Deployment Status
+### Payments
+- `POST /api/payment/deposit` - Initiate deposit
+- `POST /api/payment/withdraw` - Initiate withdrawal
+- `GET /api/payment/history` - Transaction history
 
-- [ ] Backend API deployment
-- [ ] Frontend deployment
-- [ ] Database migration
-- [ ] M-Pesa integration
-- [ ] Airtel Money integration
-- [ ] Admin dashboard
-- [ ] Production testing
+See [API.md](API.md) for full documentation.
+
+---
+
+## 🔐 Security
+
+✓ JWT authentication (30 min expiry)
+✓ Password hashing (bcrypt, 12 rounds)
+✓ Rate limiting (login, API endpoints)
+✓ CSRF protection
+✓ CORS validation
+✓ SQL injection prevention (prepared statements)
+✓ Input validation & sanitization
+✓ SSL/TLS encryption
+✓ Fraud detection & monitoring
+
+---
+
+## 📈 Performance
+
+**Targets:**
+- 500K concurrent users
+- < 200ms API response (p95)
+- < 100ms WebSocket latency
+- < 2s page load time
+- 5-second match completion
+
+**Optimizations:**
+- Redis caching for rooms & leaderboards
+- Database indexing on hot queries
+- Connection pooling
+- Gzip compression
+- CDN for static assets
+
+---
+
+## 🧪 Testing
+
+```bash
+# Backend tests
+cd backend
+npm test
+npm run test:coverage
+
+# Frontend tests
+cd frontend
+npm test
+```
+
+---
+
+## 📚 Documentation
+
+- [API Documentation](API.md)
+- [Deployment Guide](DEPLOYMENT.md)
+- [Development Roadmap](ROADMAP.md)
+
+---
+
+## 🤝 Contributing
+
+Contributions welcome! Please:
+
+1. Fork the repository
+2. Create feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit changes (`git commit -m 'Add amazing feature'`)
+4. Push to branch (`git push origin feature/amazing-feature`)
+5. Open Pull Request
+
+---
+
+## 📞 Support
+
+**Help & Support:**
+- 📱 Primary: +254 748 278 327
+- 📱 Secondary: +254 786 743 973
+- 💬 In-app chat support
+- 📧 Email: support@simbi-ke.com
+
+---
+
+## ⚖️ Legal & Compliance
+
+🚨 **Disclaimer**: This is a demonstration platform. Ensure compliance with Kenya's gaming regulations before production deployment.
+
+- Age restriction: 18+
+- Responsible gaming features
+- Regular compliance audits
+- User data protection (GDPR-like)
+
+---
+
+## 📄 License
+
+MIT License - See [LICENSE](LICENSE) file for details
+
+---
+
+## 👨‍💻 Author
+
+**Paul Owinoh**
+- GitHub: [@realowinopaul-cpu](https://github.com/realowinopaul-cpu)
+- Email: realowinopaul@gmail.com
+
+---
+
+<div align="center">
+
+**Made with ❤️ for Kenya 🇰🇪**
+
+⭐ Star us on GitHub!
+
+</div>
