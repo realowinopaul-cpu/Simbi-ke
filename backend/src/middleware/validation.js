@@ -1,33 +1,25 @@
-const { validationResult } = require('express-validator');
-const logger = require('../utils/logger');
+const { validate, schemas } = require('../config/validation');
 
-const validateRequest = (req, res, next) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    logger.warn('Validation error:', errors.array());
-    return res.status(400).json({ 
-      error: 'Validation failed', 
-      details: errors.array(),
-      status: 400 
-    });
-  }
-  next();
-};
-
-const joiValidate = (schema) => {
+const validateRequest = (schemaName) => {
   return (req, res, next) => {
-    const { error, value } = schema.validate(req.body, { abortEarly: false });
-    if (error) {
-      logger.warn('Schema validation error:', error.details);
-      return res.status(400).json({
-        error: 'Validation failed',
-        details: error.details.map(d => ({ field: d.path[0], message: d.message })),
-        status: 400
-      });
+    const schema = schemas[schemaName];
+    if (!schema) {
+      return res.status(500).json({ error: 'Validation schema not found' });
     }
-    req.validatedData = value;
+
+    const { error, value } = validate(
+      { ...req.body, ...req.params, ...req.query },
+      schema
+    );
+
+    if (error) {
+      const messages = error.details.map((d) => d.message);
+      return res.status(400).json({ errors: messages });
+    }
+
+    req.validated = value;
     next();
   };
 };
 
-module.exports = { validateRequest, joiValidate };
+module.exports = { validateRequest };
